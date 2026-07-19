@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Log;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -56,6 +57,12 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        Log::create([
+            'user_id' => $user->user_id,
+            'logs_type' => 'login',
+            'logs_details' => "{$user->user_name} logged in",
+        ]);
+
         return response()->json([
             'user' => $user,
             'token' => $token,
@@ -64,7 +71,14 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+        $user->currentAccessToken()->delete();
+
+        Log::create([
+            'user_id' => $user->user_id,
+            'logs_type' => 'logout',
+            'logs_details' => "{$user->user_name} logged out",
+        ]);
 
         return response()->json(['message' => 'Logged out']);
     }

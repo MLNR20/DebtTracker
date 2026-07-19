@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Debt;
 use App\Models\Payment;
+use App\Models\PaymentHistory;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +23,16 @@ class PaymentRepository extends BaseRepository implements PaymentRepositoryInter
         return DB::transaction(function () use ($data) {
             $payment = $this->model->newInstance()->create($data);
 
-            $this->applyToDebt($data['debt_id'], (float) $data['paid_amount']);
+            $remaining = $this->applyToDebt($data['debt_id'], (float) $data['paid_amount']);
+
+            PaymentHistory::query()->create([
+                'payment_id' => $payment->payment_id,
+                'debt_id' => $payment->debt_id,
+                'paid_amount' => $payment->paid_amount,
+                'payment_type' => $payment->payment_type,
+                'remarks' => $payment->remarks,
+                'remaining_amount' => $remaining,
+            ]);
 
             return $payment;
         });
@@ -61,7 +71,7 @@ class PaymentRepository extends BaseRepository implements PaymentRepositoryInter
      * Adjust a debt's remaining amount by the given delta (positive reduces the
      * remaining balance, negative restores it) and refresh its status.
      */
-    protected function applyToDebt(string $debtId, float $delta): void
+    protected function applyToDebt(string $debtId, float $delta): float
     {
         $debt = Debt::query()->findOrFail($debtId);
 
@@ -72,5 +82,7 @@ class PaymentRepository extends BaseRepository implements PaymentRepositoryInter
             'remaining_amount' => $remaining,
             'status' => $status,
         ]);
+
+        return $remaining;
     }
 }

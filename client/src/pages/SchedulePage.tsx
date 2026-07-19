@@ -73,7 +73,7 @@ export function SchedulePage() {
   while (cells.length % 7 !== 0) cells.push(null)
 
   return (
-    <Paper withBorder p="xl" radius="md">
+    <Paper p="xl" radius={0} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <Group justify="space-between" mb="md">
         <Title order={3}>Schedule</Title>
         <Group gap="xs">
@@ -101,7 +101,7 @@ export function SchedulePage() {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
-          gap: 4,
+          gap: 0,
         }}
       >
         {WEEKDAYS.map((day) => (
@@ -109,10 +109,21 @@ export function SchedulePage() {
             {day}
           </Text>
         ))}
+      </Box>
+
+      <Box
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          gridAutoRows: 'minmax(150px, 1fr)',
+          gap: 0,
+          flex: 1,
+        }}
+      >
 
         {cells.map((date, index) => {
           if (!date) {
-            return <Box key={`empty-${index}`} style={{ minHeight: 96 }} />
+            return <Box key={`empty-${index}`} />
           }
 
           const dayDebts = debtsByDay.get(dateKey(date)) ?? []
@@ -121,11 +132,19 @@ export function SchedulePage() {
           return (
             <Paper
               key={dateKey(date)}
-              withBorder
+              radius={0}
               p="xs"
               style={{
-                minHeight: 96,
-                background: isToday ? 'var(--mantine-color-blue-light)' : undefined,
+                border: 0,
+                borderTop: '1px solid var(--mantine-color-gray-3)',
+                borderLeft: '1px solid var(--mantine-color-gray-3)',
+                borderRight: '1px solid var(--mantine-color-gray-3)',
+                borderBottom: '1px solid var(--mantine-color-gray-3)',
+                background: isToday
+                  ? 'var(--mantine-color-blue-light)'
+                  : index % 2 === 0
+                    ? 'var(--mantine-color-gray-0)'
+                    : 'var(--mantine-color-white)',
               }}
             >
               <Text size="sm" fw={isToday ? 700 : 400}>

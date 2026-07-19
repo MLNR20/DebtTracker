@@ -8,9 +8,11 @@ import { RegisterPage } from './pages/RegisterPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { UsersPage } from './pages/UsersPage'
 import { GroupsPage } from './pages/GroupsPage'
+import { GroupMembersPage } from './pages/GroupMembersPage'
 import { DebtsPage } from './pages/DebtsPage'
 import { PaymentsPage } from './pages/PaymentsPage'
 import { SchedulePage } from './pages/SchedulePage'
+import { HistoryPage } from './pages/HistoryPage'
 
 function App() {
   return (
@@ -20,16 +22,13 @@ function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/history" element={<ComingSoonPage title="History" />} />
+        <Route path="/history" element={<HistoryPage />} />
         <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/roles" element={<RolesPage />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/contacts" element={<ContactsPage />} />
         <Route path="/groups" element={<GroupsPage />} />
-        <Route
-          path="/group-members"
-          element={<ComingSoonPage title="Group members" />}
-        />
+        <Route path="/group-members" element={<GroupMembersPage />} />
         <Route
           path="/group-expenses"
           element={<ComingSoonPage title="Group expenses" />}
