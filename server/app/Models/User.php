@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasIsDeleted;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, HasUuids, Notifiable;
+    use HasApiTokens, HasFactory, HasUuids, Notifiable, HasIsDeleted;
 
     protected $primaryKey = 'user_id';
 
@@ -33,6 +34,7 @@ class User extends Authenticatable
         'user_name',
         'password',
         'is_active',
+        'is_deleted',
     ];
 
     protected $hidden = [
@@ -42,6 +44,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_deleted' => 'boolean',
     ];
 
     public function role(): BelongsTo

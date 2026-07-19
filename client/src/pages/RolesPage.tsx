@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Button, Group, Modal, Text, TextInput } from '@mantine/core'
+import { Button, Group, Modal, Text, TextInput, Title } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useForm } from '@mantine/form'
-import { zodResolver } from 'mantine-form-zod-resolver'
+import { zod4Resolver } from 'mantine-form-zod-resolver'
 import { notifications } from '@mantine/notifications'
 import { isAxiosError } from 'axios'
 import { z } from 'zod'
@@ -28,13 +28,14 @@ const columns: CrudTableColumn<Role>[] = [
 export function RolesPage() {
   const [formOpened, { open: openForm, close: closeForm }] = useDisclosure(false)
   const [deleteTarget, setDeleteTarget] = useState<Role | null>(null)
+  const [viewTarget, setViewTarget] = useState<Role | null>(null)
   const [editing, setEditing] = useState<Role | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
   const [submitting, setSubmitting] = useState(false)
 
   const form = useForm<RoleFormValues>({
     initialValues: { role_name: '' },
-    validate: zodResolver(roleSchema),
+    validate: zod4Resolver(roleSchema),
   })
 
   const reload = () => setReloadKey((key) => key + 1)
@@ -103,6 +104,7 @@ export function RolesPage() {
         getRowId={(row) => row.role_id}
         fetchPage={fetchRoles}
         onCreate={handleCreate}
+        onView={setViewTarget}
         onEdit={handleEdit}
         onDelete={setDeleteTarget}
         searchPlaceholder="Search roles…"
@@ -112,12 +114,17 @@ export function RolesPage() {
       <Modal
         opened={formOpened}
         onClose={closeForm}
-        title={editing ? 'Edit role' : 'New role'}
+        title={
+          <Title order={4} c="dark.9" fw={700}>
+            {editing ? 'Edit role' : 'New role'}
+          </Title>
+        }
       >
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <TextInput
             label="Role name"
             placeholder="Admin"
+            withAsterisk
             {...form.getInputProps('role_name')}
           />
           <Group justify="flex-end" mt="md">
@@ -129,6 +136,32 @@ export function RolesPage() {
             </Button>
           </Group>
         </form>
+      </Modal>
+
+      <Modal
+        opened={Boolean(viewTarget)}
+        onClose={() => setViewTarget(null)}
+        title={
+          <Title order={4} c="dark.9" fw={700}>
+            Role details
+          </Title>
+        }
+      >
+        <Text size="sm" c="dimmed">
+          Role name
+        </Text>
+        <Text mb="md">{viewTarget?.role_name}</Text>
+        <Text size="sm" c="dimmed">
+          Created
+        </Text>
+        <Text mb="md">
+          {viewTarget && new Date(viewTarget.date_created).toLocaleString()}
+        </Text>
+        <Group justify="flex-end">
+          <Button variant="default" onClick={() => setViewTarget(null)}>
+            Close
+          </Button>
+        </Group>
       </Modal>
 
       <Modal

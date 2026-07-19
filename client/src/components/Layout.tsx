@@ -1,12 +1,13 @@
-import { ActionIcon, AppShell, Burger, Divider, Group, ScrollArea, Stack, Text, Title } from '@mantine/core'
+import { ActionIcon, AppShell, Burger, Divider, Group, Menu, ScrollArea, Stack, Text, Title } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import {
   IconBell,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
+  IconLogin,
   IconUserCircle,
 } from '@tabler/icons-react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { navSections, primaryNavSections } from './navConfig'
 
@@ -16,6 +17,7 @@ const COLLAPSED_WIDTH = 76
 export function Layout() {
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure()
   const [desktopCollapsed, { toggle: toggleDesktop }] = useDisclosure(false)
+  const navigate = useNavigate()
 
   return (
     <AppShell
@@ -45,9 +47,18 @@ export function Layout() {
             <ActionIcon variant="subtle" color="gray" aria-label="Notifications">
               <IconBell size={20} />
             </ActionIcon>
-            <ActionIcon variant="subtle" color="gray" aria-label="User account">
-              <IconUserCircle size={22} />
-            </ActionIcon>
+            <Menu shadow="md" width={180} position="bottom-end">
+              <Menu.Target>
+                <ActionIcon variant="subtle" color="gray" aria-label="User account">
+                  <IconUserCircle size={22} />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item leftSection={<IconLogin size={16} />} onClick={() => navigate('/login')}>
+                  Log in
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
           </Group>
         </Group>
       </AppShell.Header>

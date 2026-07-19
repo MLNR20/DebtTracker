@@ -1,6 +1,7 @@
 import {
   IconAddressBook,
   IconBell,
+  IconCalendar,
   IconFileText,
   IconHistory,
   IconLayoutDashboard,
@@ -29,6 +30,7 @@ export const primaryNavSections: NavSection[] = [
     label: 'Overview',
     items: [
       { label: 'Dashboard', path: '/dashboard', icon: IconLayoutDashboard },
+      { label: 'Schedule', path: '/schedule', icon: IconCalendar },
       { label: 'History', path: '/history', icon: IconHistory },
     ],
   },

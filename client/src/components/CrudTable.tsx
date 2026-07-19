@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import {
-  ActionIcon,
   Alert,
   Button,
   Group,
@@ -13,6 +12,7 @@ import {
   Title,
 } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
+import { IconEye, IconPencil, IconTrash } from '@tabler/icons-react'
 import type { PaginatedResponse } from '../types/pagination'
 
 export interface CrudTableColumn<T> {
@@ -31,6 +31,7 @@ interface CrudTableProps<T> {
     search: string
   }) => Promise<PaginatedResponse<T>>
   onCreate?: () => void
+  onView?: (row: T) => void
   onEdit?: (row: T) => void
   onDelete?: (row: T) => void
   createLabel?: string
@@ -46,6 +47,7 @@ export function CrudTable<T>({
   getRowId,
   fetchPage,
   onCreate,
+  onView,
   onEdit,
   onDelete,
   createLabel = 'New',
@@ -86,10 +88,10 @@ export function CrudTable<T>({
   }, [page, perPage, debouncedSearch, reloadKey, fetchPage])
 
   const rows = result?.data ?? []
-  const showActions = Boolean(onEdit || onDelete)
+  const showActions = Boolean(onView || onEdit || onDelete)
 
   return (
-    <Paper withBorder p="md" radius="md">
+    <Paper withBorder p="xl" radius="md">
       <Group justify="space-between" mb="md">
         <Title order={3}>{title}</Title>
         {onCreate && (
@@ -117,7 +119,7 @@ export function CrudTable<T>({
               {columns.map((column) => (
                 <Table.Th key={column.key}>{column.label}</Table.Th>
               ))}
-              {showActions && <Table.Th w={120}>Actions</Table.Th>}
+              {showActions && <Table.Th w={260}>Actions</Table.Th>}
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -153,25 +155,38 @@ export function CrudTable<T>({
                   ))}
                   {showActions && (
                     <Table.Td>
-                      <Group gap="xs">
+                      <Group gap="xs" wrap="nowrap">
+                        {onView && (
+                          <Button
+                            size="xs"
+                            variant="filled"
+                            color="gray"
+                            leftSection={<IconEye size={16} />}
+                            onClick={() => onView(row)}
+                          >
+                            View
+                          </Button>
+                        )}
                         {onEdit && (
-                          <ActionIcon
-                            variant="subtle"
-                            aria-label="Edit"
+                          <Button
+                            size="xs"
+                            variant="filled"
+                            leftSection={<IconPencil size={16} />}
                             onClick={() => onEdit(row)}
                           >
-                            ✎
-                          </ActionIcon>
+                            Edit
+                          </Button>
                         )}
                         {onDelete && (
-                          <ActionIcon
-                            variant="subtle"
+                          <Button
+                            size="xs"
+                            variant="filled"
                             color="red"
-                            aria-label="Delete"
+                            leftSection={<IconTrash size={16} />}
                             onClick={() => onDelete(row)}
                           >
-                            ✕
-                          </ActionIcon>
+                            Delete
+                          </Button>
                         )}
                       </Group>
                     </Table.Td>
