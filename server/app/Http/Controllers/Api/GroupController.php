@@ -7,11 +7,14 @@ use App\Http\Requests\StoreGroupRequest;
 use App\Http\Requests\UpdateGroupRequest;
 use App\Models\Group;
 use App\Repositories\Contracts\GroupRepositoryInterface;
+use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class GroupController extends Controller
 {
+    use LogsActivity;
+
     public function __construct(protected GroupRepositoryInterface $groups)
     {
     }
@@ -28,6 +31,8 @@ class GroupController extends Controller
     {
         $group = $this->groups->create($request->validated());
 
+        $this->logActivity('group_created', "Created group {$group->group_name}");
+
         return response()->json($group->load('creator'), 201);
     }
 
@@ -40,11 +45,15 @@ class GroupController extends Controller
     {
         $updated = $this->groups->update($group->group_id, $request->validated());
 
+        $this->logActivity('group_updated', "Updated group {$updated->group_name}");
+
         return response()->json($updated->load('creator'));
     }
 
     public function destroy(Group $group): JsonResponse
     {
+        $this->logActivity('group_deleted', "Deleted group {$group->group_name}");
+
         $this->groups->softDelete($group->group_id);
 
         return response()->json(null, 204);

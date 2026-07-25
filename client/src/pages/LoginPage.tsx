@@ -27,8 +27,9 @@ export function LoginPage() {
   const handleSubmit = async (values: LoginFormValues) => {
     setSubmitting(true)
     try {
-      const { token } = await login(values)
+      const { token, user } = await login(values)
       localStorage.setItem('auth_token', token)
+      localStorage.setItem('auth_user', JSON.stringify(user))
       notifications.show({ message: 'Logged in successfully', color: 'green' })
       navigate('/dashboard')
     } catch (err) {
@@ -71,6 +72,9 @@ export function LoginPage() {
               withAsterisk
               {...form.getInputProps('password')}
             />
+            <Anchor component={Link} to="/forgot-password" size="sm" ta="right">
+              Forgot password?
+            </Anchor>
           </Stack>
           <Button type="submit" fullWidth mt="xl" loading={submitting}>
             Sign in

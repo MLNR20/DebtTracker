@@ -1,5 +1,11 @@
 import { api } from '../lib/api'
-import type { AuthResponse, LoginPayload, RegisterPayload } from '../types/auth'
+import type {
+  AuthResponse,
+  ForgotPasswordPayload,
+  LoginPayload,
+  RegisterPayload,
+  ResetPasswordPayload,
+} from '../types/auth'
 
 export async function login(payload: LoginPayload) {
   const { data } = await api.post<AuthResponse>('/login', payload)
@@ -8,5 +14,19 @@ export async function login(payload: LoginPayload) {
 
 export async function register(payload: RegisterPayload) {
   const { data } = await api.post<AuthResponse>('/register', payload)
+  return data
+}
+
+export async function logout() {
+  await api.post('/logout')
+}
+
+export async function forgotPassword(payload: ForgotPasswordPayload) {
+  const { data } = await api.post<{ message: string }>('/forgot-password', payload)
+  return data
+}
+
+export async function resetPassword(payload: ResetPasswordPayload) {
+  const { data } = await api.post<{ message: string }>('/reset-password', payload)
   return data
 }

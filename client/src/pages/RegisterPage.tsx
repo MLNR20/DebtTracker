@@ -43,8 +43,9 @@ export function RegisterPage() {
   const handleSubmit = async (values: RegisterFormValues) => {
     setSubmitting(true)
     try {
-      const { token } = await register(values)
+      const { token, user } = await register(values)
       localStorage.setItem('auth_token', token)
+      localStorage.setItem('auth_user', JSON.stringify(user))
       notifications.show({ message: 'Account created', color: 'green' })
       navigate('/dashboard')
     } catch (err) {

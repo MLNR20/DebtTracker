@@ -7,11 +7,14 @@ use App\Http\Requests\StoreContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
 use App\Repositories\Contracts\ContactRepositoryInterface;
+use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
+    use LogsActivity;
+
     public function __construct(protected ContactRepositoryInterface $contacts)
     {
     }
@@ -28,6 +31,8 @@ class ContactController extends Controller
     {
         $contact = $this->contacts->create($request->validated());
 
+        $this->logActivity('contact_created', "Created contact {$contact->first_name} {$contact->last_name}");
+
         return response()->json($contact->load('user'), 201);
     }
 
@@ -40,11 +45,15 @@ class ContactController extends Controller
     {
         $updated = $this->contacts->update($contact->contact_id, $request->validated());
 
+        $this->logActivity('contact_updated', "Updated contact {$updated->first_name} {$updated->last_name}");
+
         return response()->json($updated->load('user'));
     }
 
     public function destroy(Contact $contact): JsonResponse
     {
+        $this->logActivity('contact_deleted', "Deleted contact {$contact->first_name} {$contact->last_name}");
+
         $this->contacts->delete($contact->contact_id);
 
         return response()->json(null, 204);

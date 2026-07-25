@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DebtController;
 use App\Http\Controllers\Api\GroupController;
 use App\Http\Controllers\Api\GroupMemberController;
+use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PaymentHistoryController;
 use App\Http\Controllers\Api\RoleController;
@@ -30,17 +31,23 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
-Route::middleware('auth:sanctum')->post('logout', [AuthController::class, 'logout']);
+Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
-Route::apiResource('roles', RoleController::class);
-Route::apiResource('contacts', ContactController::class);
-Route::apiResource('users', UserController::class);
-Route::apiResource('groups', GroupController::class);
-Route::apiResource('group-members', GroupMemberController::class);
-Route::apiResource('debts', DebtController::class);
-Route::apiResource('payments', PaymentController::class);
-Route::apiResource('payment-histories', PaymentHistoryController::class)->only(['index', 'show']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('logout', [AuthController::class, 'logout']);
 
-Route::get('dashboard/summary', [DashboardController::class, 'summary']);
-Route::get('dashboard/chart', [DashboardController::class, 'chart']);
-Route::get('dashboard/pending', [DashboardController::class, 'pending']);
+    Route::apiResource('roles', RoleController::class);
+    Route::apiResource('contacts', ContactController::class);
+    Route::apiResource('users', UserController::class);
+    Route::apiResource('groups', GroupController::class);
+    Route::apiResource('group-members', GroupMemberController::class);
+    Route::apiResource('debts', DebtController::class);
+    Route::apiResource('payments', PaymentController::class);
+    Route::apiResource('payment-histories', PaymentHistoryController::class)->only(['index', 'show']);
+    Route::apiResource('logs', LogController::class)->only(['index', 'show']);
+
+    Route::get('dashboard/summary', [DashboardController::class, 'summary']);
+    Route::get('dashboard/chart', [DashboardController::class, 'chart']);
+    Route::get('dashboard/pending', [DashboardController::class, 'pending']);
+});

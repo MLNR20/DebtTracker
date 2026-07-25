@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Log;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -67,6 +69,50 @@ class AuthController extends Controller
             'user' => $user,
             'token' => $token,
         ]);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'email_address' => ['required', 'email'],
+        ]);
+
+        $status = Password::sendResetLink($validated);
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            throw ValidationException::withMessages([
+                'email_address' => [__($status)],
+            ]);
+        }
+
+        return response()->json(['message' => __($status)]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'token' => ['required', 'string'],
+            'email_address' => ['required', 'email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $status = Password::reset(
+            $validated,
+            function (User $user, string $password) {
+                $user->password = Hash::make($password);
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status !== Password::PASSWORD_RESET) {
+            throw ValidationException::withMessages([
+                'email_address' => [__($status)],
+            ]);
+        }
+
+        return response()->json(['message' => __($status)]);
     }
 
     public function logout(Request $request)

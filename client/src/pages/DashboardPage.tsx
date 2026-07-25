@@ -1,12 +1,12 @@
-import { useEffect, useState, type ComponentType } from 'react'
+import { useEffect, useState } from 'react'
 import {
-  ActionIcon,
   Badge,
   Grid,
   Group,
   Loader,
   Paper,
   SimpleGrid,
+  Stack,
   Table,
   Text,
   Title,
@@ -34,6 +34,8 @@ import {
 } from '../api/dashboard'
 import type { DashboardChartPoint, DashboardSummary } from '../types/dashboard'
 import type { Debt } from '../types/debt'
+import { PageHeader } from '../components/PageHeader'
+import { StatCard } from '../components/StatCard'
 
 const statusColors: Record<string, string> = {
   pending: 'yellow',
@@ -43,48 +45,6 @@ const statusColors: Record<string, string> = {
 
 function formatCurrency(value: number): string {
   return `₱${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
-function StatCard({
-  label,
-  value,
-  color,
-  icon: Icon,
-}: {
-  label: string
-  value: string
-  color?: string
-  icon: ComponentType<{ size?: number | string; stroke?: number }>
-}) {
-  return (
-    <Paper withBorder p={32} radius="md">
-      <Group justify="flex-start" align="flex-start">
-        <ActionIcon
-          variant="light"
-          color={color ?? 'violet'}
-          size={40}
-          radius="md"
-          disabled
-          styles={{
-            root: {
-              backgroundColor: `var(--mantine-color-${color ?? 'violet'}-1)`,
-              color: `var(--mantine-color-${color ?? 'violet'}-7)`,
-            },
-          }}
-        >
-          <Icon size={22} stroke={1.75} />
-        </ActionIcon>
-        <div>
-          <Text size="sm" c="dimmed">
-            {label}
-          </Text>
-          <Text size="2.25rem" fw={700} mt="xs" c="black">
-            {value}
-          </Text>
-        </div>
-      </Group>
-    </Paper>
-  )
 }
 
 export function DashboardPage() {
@@ -126,7 +86,10 @@ export function DashboardPage() {
   }
 
   return (
-    <Grid>
+    <Stack gap="lg" p="xl">
+      <PageHeader header="Dashboard" subheader="Overview of your debts, payments, and activity" />
+
+      <Grid>
       <Grid.Col span={12}>
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
           <StatCard
@@ -161,48 +124,50 @@ export function DashboardPage() {
           <Title order={4} mb="md">
             Debt activity (last 6 months)
           </Title>
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id="totalGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--mantine-color-blue-6)" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="var(--mantine-color-blue-6)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="collectedGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--mantine-color-green-6)" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="var(--mantine-color-green-6)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-              <Area
-                type="monotone"
-                dataKey="total_amount"
-                name="Total debt"
-                stroke="var(--mantine-color-blue-6)"
-                fill="url(#totalGradient)"
-              />
-              <Area
-                type="monotone"
-                dataKey="collected_amount"
-                name="Collected"
-                stroke="var(--mantine-color-green-6)"
-                fill="url(#collectedGradient)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div style={{ paddingRight: 24, paddingBottom: 8 }}>
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 16 }}>
+                <defs>
+                  <linearGradient id="totalGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--mantine-color-blue-6)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="var(--mantine-color-blue-6)" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="collectedGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--mantine-color-green-6)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="var(--mantine-color-green-6)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                <Area
+                  type="monotone"
+                  dataKey="total_amount"
+                  name="Total debt"
+                  stroke="var(--mantine-color-blue-6)"
+                  fill="url(#totalGradient)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="collected_amount"
+                  name="Collected"
+                  stroke="var(--mantine-color-green-6)"
+                  fill="url(#collectedGradient)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </Paper>
       </Grid.Col>
 
       <Grid.Col span={12}>
-        <Paper withBorder p="lg" radius="md">
-          <Title order={4} mb="md">
+        <Paper withBorder p="md" radius="md">
+          <Title order={5} mb="sm">
             Pending balances
           </Title>
-          <Table.ScrollContainer minWidth={480}>
-            <Table striped highlightOnHover verticalSpacing="sm">
+          <Table.ScrollContainer minWidth={480} px="md">
+            <Table striped highlightOnHover verticalSpacing="xs" horizontalSpacing="md">
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>Debtor</Table.Th>
@@ -252,6 +217,7 @@ export function DashboardPage() {
           </Table.ScrollContainer>
         </Paper>
       </Grid.Col>
-    </Grid>
+      </Grid>
+    </Stack>
   )
 }

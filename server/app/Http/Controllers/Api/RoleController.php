@@ -7,11 +7,14 @@ use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
 use App\Models\Role;
 use App\Repositories\Contracts\RoleRepositoryInterface;
+use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
+    use LogsActivity;
+
     public function __construct(protected RoleRepositoryInterface $roles)
     {
     }
@@ -28,6 +31,8 @@ class RoleController extends Controller
     {
         $role = $this->roles->create($request->validated());
 
+        $this->logActivity('role_created', "Created role {$role->role_name}");
+
         return response()->json($role, 201);
     }
 
@@ -40,11 +45,15 @@ class RoleController extends Controller
     {
         $updated = $this->roles->update($role->role_id, $request->validated());
 
+        $this->logActivity('role_updated', "Updated role {$updated->role_name}");
+
         return response()->json($updated);
     }
 
     public function destroy(Role $role): JsonResponse
     {
+        $this->logActivity('role_deleted', "Deleted role {$role->role_name}");
+
         $this->roles->delete($role->role_id);
 
         return response()->json(null, 204);

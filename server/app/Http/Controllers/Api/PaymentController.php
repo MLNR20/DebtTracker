@@ -7,11 +7,14 @@ use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
 use App\Models\Payment;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
+use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
+    use LogsActivity;
+
     protected array $with = ['debt', 'debt.creditor', 'debt.debtorUser', 'debt.debtorContact'];
 
     public function __construct(protected PaymentRepositoryInterface $payments)
@@ -30,6 +33,8 @@ class PaymentController extends Controller
     {
         $payment = $this->payments->create($request->validated());
 
+        $this->logActivity('payment_created', "Recorded payment of ₱{$payment->paid_amount} ({$payment->payment_type})");
+
         return response()->json($payment->load($this->with), 201);
     }
 
@@ -42,11 +47,15 @@ class PaymentController extends Controller
     {
         $updated = $this->payments->update($payment->payment_id, $request->validated());
 
+        $this->logActivity('payment_updated', "Updated payment of ₱{$updated->paid_amount} ({$updated->payment_type})");
+
         return response()->json($updated->load($this->with));
     }
 
     public function destroy(Payment $payment): JsonResponse
     {
+        $this->logActivity('payment_deleted', "Deleted payment of ₱{$payment->paid_amount} ({$payment->payment_type})");
+
         $this->payments->softDelete($payment->payment_id);
 
         return response()->json(null, 204);

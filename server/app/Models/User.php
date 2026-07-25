@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasIsDeleted;
+use App\Notifications\ResetPasswordNotification;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,9 +14,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements CanResetPasswordContract
 {
-    use HasApiTokens, HasFactory, HasUuids, Notifiable, HasIsDeleted;
+    use HasApiTokens, HasFactory, HasUuids, Notifiable, HasIsDeleted, CanResetPassword;
 
     protected $primaryKey = 'user_id';
 
@@ -46,6 +49,16 @@ class User extends Authenticatable
         'is_active' => 'boolean',
         'is_deleted' => 'boolean',
     ];
+
+    public function getEmailForPasswordReset(): string
+    {
+        return $this->email_address;
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
 
     public function role(): BelongsTo
     {

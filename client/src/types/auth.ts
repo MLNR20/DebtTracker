@@ -24,3 +24,14 @@ export interface RegisterPayload {
   password: string
   password_confirmation: string
 }
+
+export interface ForgotPasswordPayload {
+  email_address: string
+}
+
+export interface ResetPasswordPayload {
+  token: string
+  email_address: string
+  password: string
+  password_confirmation: string
+}

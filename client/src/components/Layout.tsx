@@ -4,20 +4,45 @@ import {
   IconBell,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
-  IconLogin,
+  IconLogout,
   IconUserCircle,
 } from '@tabler/icons-react'
 import { Outlet, useNavigate } from 'react-router-dom'
+import { logout } from '../api/auth'
 import { Sidebar } from './Sidebar'
 import { navSections, primaryNavSections } from './navConfig'
+import type { AuthUser } from '../types/auth'
 
 const EXPANDED_WIDTH = 240
 const COLLAPSED_WIDTH = 76
+
+function getStoredUser(): AuthUser | null {
+  const raw = localStorage.getItem('auth_user')
+  if (!raw) return null
+  try {
+    return JSON.parse(raw) as AuthUser
+  } catch {
+    return null
+  }
+}
 
 export function Layout() {
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure()
   const [desktopCollapsed, { toggle: toggleDesktop }] = useDisclosure(false)
   const navigate = useNavigate()
+  const user = getStoredUser()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch {
+      // ignore — clear local session regardless
+    } finally {
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_user')
+      navigate('/login')
+    }
+  }
 
   return (
     <AppShell
@@ -54,8 +79,8 @@ export function Layout() {
                 </ActionIcon>
               </Menu.Target>
               <Menu.Dropdown>
-                <Menu.Item leftSection={<IconLogin size={16} />} onClick={() => navigate('/login')}>
-                  Log in
+                <Menu.Item leftSection={<IconLogout size={16} />} onClick={handleLogout}>
+                  Log out
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
@@ -80,15 +105,34 @@ export function Layout() {
 
           <Divider my="sm" />
 
-          <Group justify={desktopCollapsed ? 'center' : 'flex-end'} visibleFrom="sm">
-            <ActionIcon variant="subtle" color="gray" onClick={toggleDesktop} aria-label="Toggle sidebar">
-              {desktopCollapsed ? (
-                <IconLayoutSidebarLeftExpand size={18} />
-              ) : (
-                <IconLayoutSidebarLeftCollapse size={18} />
+          {desktopCollapsed ? (
+            <Stack align="center" gap="sm" visibleFrom="sm">
+              {user && (
+                <ActionIcon variant="light" color="violet" radius="xl" size={32} aria-label={user.email_address}>
+                  {user.first_name.charAt(0).toUpperCase()}
+                </ActionIcon>
               )}
-            </ActionIcon>
-          </Group>
+              <ActionIcon variant="subtle" color="gray" onClick={toggleDesktop} aria-label="Toggle sidebar">
+                <IconLayoutSidebarLeftExpand size={18} />
+              </ActionIcon>
+            </Stack>
+          ) : (
+            <Group justify={user ? 'space-between' : 'center'} wrap="nowrap" visibleFrom="sm">
+              {user && (
+                <Stack gap={0} px={4} style={{ minWidth: 0 }}>
+                  <Text size="sm" fw={600} truncate>
+                    {user.first_name} {user.last_name}
+                  </Text>
+                  <Text size="xs" c="dimmed" truncate>
+                    {user.email_address}
+                  </Text>
+                </Stack>
+              )}
+              <ActionIcon variant="subtle" color="gray" onClick={toggleDesktop} aria-label="Toggle sidebar">
+                <IconLayoutSidebarLeftCollapse size={18} />
+              </ActionIcon>
+            </Group>
+          )}
         </Stack>
       </AppShell.Navbar>
 

@@ -162,6 +162,7 @@ export function ContactsPage() {
         opened={formOpened}
         onClose={closeForm}
         title={editing ? 'Edit contact' : 'New contact'}
+        styles={{ title: { color: 'black', fontWeight: 600 } }}
       >
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Select
