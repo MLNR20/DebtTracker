@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DebtController;
 use App\Http\Controllers\Api\GroupController;
+use App\Http\Controllers\Api\GroupExpenseController;
 use App\Http\Controllers\Api\GroupMemberController;
 use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\PaymentController;
@@ -31,7 +32,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
-Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('users', UserController::class);
     Route::apiResource('groups', GroupController::class);
     Route::apiResource('group-members', GroupMemberController::class);
+    Route::apiResource('group-expenses', GroupExpenseController::class);
     Route::apiResource('debts', DebtController::class);
     Route::apiResource('payments', PaymentController::class);
     Route::apiResource('payment-histories', PaymentHistoryController::class)->only(['index', 'show']);
