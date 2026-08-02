@@ -14,6 +14,7 @@ import { useForm } from '@mantine/form'
 import { zod4Resolver } from 'mantine-form-zod-resolver'
 import { notifications } from '@mantine/notifications'
 import { isAxiosError } from 'axios'
+import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { CrudTable, type CrudTableColumn } from '../components/CrudTable'
 import { createDebt, deleteDebt, fetchDebts, updateDebt } from '../api/debts'
@@ -103,6 +104,7 @@ const columns: CrudTableColumn<Debt>[] = [
 ]
 
 export function DebtsPage() {
+  const navigate = useNavigate()
   const [formOpened, { open: openForm, close: closeForm }] = useDisclosure(false)
   const [deleteTarget, setDeleteTarget] = useState<Debt | null>(null)
   const [editing, setEditing] = useState<Debt | null>(null)
@@ -228,6 +230,12 @@ export function DebtsPage() {
 
   return (
     <>
+      <MantineGroup justify="flex-end" mb="md">
+        <Button variant="light" onClick={() => navigate('/debts/bulk-assign')}>
+          Assign to multiple debtors
+        </Button>
+      </MantineGroup>
+
       <CrudTable
         title="Debts"
         columns={columns}

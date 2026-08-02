@@ -36,21 +36,28 @@ const paymentSchema = z.object({
 
 type PaymentFormValues = z.infer<typeof paymentSchema>
 
-function debtLabel(debt: Debt): string {
-  const debtor = debt.debtor_user
+function debtorName(debt: Debt): string {
+  return debt.debtor_user
     ? `${debt.debtor_user.first_name} ${debt.debtor_user.last_name}`
     : debt.debtor_contact
       ? `${debt.debtor_contact.first_name} ${debt.debtor_contact.last_name}`
       : 'Unknown debtor'
+}
 
-  return `${debtor} — ₱${debt.remaining_amount} remaining`
+function debtLabel(debt: Debt): string {
+  return `${debtorName(debt)} — ₱${debt.remaining_amount} remaining`
 }
 
 const columns: CrudTableColumn<Payment>[] = [
   {
     key: 'debt',
     label: 'Debt',
-    render: (row) => (row.debt ? debtLabel(row.debt) : '—'),
+    render: (row) => (row.debt ? debtorName(row.debt) : '—'),
+  },
+  {
+    key: 'remaining_amount',
+    label: 'Remaining balance',
+    render: (row) => (row.debt ? `₱${row.debt.remaining_amount}` : '—'),
   },
   {
     key: 'paid_amount',
@@ -61,7 +68,12 @@ const columns: CrudTableColumn<Payment>[] = [
   {
     key: 'created_at',
     label: 'Date',
-    render: (row) => new Date(row.created_at).toLocaleDateString(),
+    render: (row) =>
+      new Date(row.created_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
   },
   { key: 'remarks', label: 'Remarks', render: (row) => row.remarks ?? '—' },
 ]

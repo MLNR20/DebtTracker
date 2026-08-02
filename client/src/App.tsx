@@ -13,6 +13,7 @@ import { GroupsPage } from './pages/GroupsPage'
 import { GroupMembersPage } from './pages/GroupMembersPage'
 import { GroupExpensesPage } from './pages/GroupExpensesPage'
 import { DebtsPage } from './pages/DebtsPage'
+import { BulkDebtAssignPage } from './pages/BulkDebtAssignPage'
 import { PaymentsPage } from './pages/PaymentsPage'
 import { SchedulePage } from './pages/SchedulePage'
 import { HistoryPage } from './pages/HistoryPage'
@@ -37,6 +38,7 @@ function App() {
           <Route path="/group-members" element={<GroupMembersPage />} />
           <Route path="/group-expenses" element={<GroupExpensesPage />} />
           <Route path="/debts" element={<DebtsPage />} />
+          <Route path="/debts/bulk-assign" element={<BulkDebtAssignPage />} />
           <Route path="/payments" element={<PaymentsPage />} />
           <Route
             path="/notifications"
