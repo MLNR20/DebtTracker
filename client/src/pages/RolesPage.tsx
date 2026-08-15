@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Group, Modal, Text, TextInput, Title } from '@mantine/core'
+import { Button, Group, Modal, Stack, Text, TextInput, Title } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useForm } from '@mantine/form'
 import { zod4Resolver } from 'mantine-form-zod-resolver'
@@ -98,18 +98,20 @@ export function RolesPage() {
 
   return (
     <>
-      <CrudTable
-        title="Roles"
-        columns={columns}
-        getRowId={(row) => row.role_id}
-        fetchPage={fetchRoles}
-        onCreate={handleCreate}
-        onView={setViewTarget}
-        onEdit={handleEdit}
-        onDelete={setDeleteTarget}
-        searchPlaceholder="Search roles…"
-        reloadKey={reloadKey}
-      />
+      <Stack gap="lg" p="xl">
+        <CrudTable
+          title="Roles"
+          columns={columns}
+          getRowId={(row) => row.role_id}
+          fetchPage={fetchRoles}
+          onCreate={handleCreate}
+          onView={setViewTarget}
+          onEdit={handleEdit}
+          onDelete={setDeleteTarget}
+          searchPlaceholder="Search roles…"
+          reloadKey={reloadKey}
+        />
+      </Stack>
 
       <Modal
         opened={formOpened}

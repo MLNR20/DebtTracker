@@ -6,6 +6,7 @@ import {
   Modal,
   NumberInput,
   Select,
+  Stack,
   Text,
   TextInput,
 } from '@mantine/core'
@@ -230,23 +231,25 @@ export function DebtsPage() {
 
   return (
     <>
-      <MantineGroup justify="flex-end" mb="md">
-        <Button variant="light" onClick={() => navigate('/debts/bulk-assign')}>
-          Assign to multiple debtors
-        </Button>
-      </MantineGroup>
+      <Stack gap="lg" p="xl">
+        <MantineGroup justify="flex-end">
+          <Button variant="light" onClick={() => navigate('/debts/bulk-assign')}>
+            Assign to multiple debtors
+          </Button>
+        </MantineGroup>
 
-      <CrudTable
-        title="Debts"
-        columns={columns}
-        getRowId={(row) => row.debt_id}
-        fetchPage={fetchDebts}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-        onDelete={setDeleteTarget}
-        searchPlaceholder="Search debts…"
-        reloadKey={reloadKey}
-      />
+        <CrudTable
+          title="Debts"
+          columns={columns}
+          getRowId={(row) => row.debt_id}
+          fetchPage={fetchDebts}
+          onCreate={handleCreate}
+          onEdit={handleEdit}
+          onDelete={setDeleteTarget}
+          searchPlaceholder="Search debts…"
+          reloadKey={reloadKey}
+        />
+      </Stack>
 
       <Modal
         opened={formOpened}

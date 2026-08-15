@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Group, Modal, Select, Text, TextInput } from '@mantine/core'
+import { Button, Group, Modal, Select, Stack, Text, TextInput } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useForm } from '@mantine/form'
 import { zod4Resolver } from 'mantine-form-zod-resolver'
@@ -146,17 +146,19 @@ export function ContactsPage() {
 
   return (
     <>
-      <CrudTable
-        title="Contacts"
-        columns={columns}
-        getRowId={(row) => row.contact_id}
-        fetchPage={fetchContacts}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-        onDelete={setDeleteTarget}
-        searchPlaceholder="Search contacts…"
-        reloadKey={reloadKey}
-      />
+      <Stack gap="lg" p="xl">
+        <CrudTable
+          title="Contacts"
+          columns={columns}
+          getRowId={(row) => row.contact_id}
+          fetchPage={fetchContacts}
+          onCreate={handleCreate}
+          onEdit={handleEdit}
+          onDelete={setDeleteTarget}
+          searchPlaceholder="Search contacts…"
+          reloadKey={reloadKey}
+        />
+      </Stack>
 
       <Modal
         opened={formOpened}

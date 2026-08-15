@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Badge, Button, Group, Modal, Select, Switch, Text, TextInput } from '@mantine/core'
+import { Badge, Button, Group, Modal, Select, Stack, Switch, Text, TextInput } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useForm } from '@mantine/form'
 import { zod4Resolver } from 'mantine-form-zod-resolver'
@@ -155,22 +155,25 @@ export function UsersPage() {
 
   return (
     <>
-      <CrudTable
-        title="Users"
-        columns={columns}
-        getRowId={(row) => row.user_id}
-        fetchPage={fetchUsers}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-        onDelete={setDeleteTarget}
-        searchPlaceholder="Search users…"
-        reloadKey={reloadKey}
-      />
+      <Stack gap="lg" p="xl">
+        <CrudTable
+          title="Users"
+          columns={columns}
+          getRowId={(row) => row.user_id}
+          fetchPage={fetchUsers}
+          onCreate={handleCreate}
+          onEdit={handleEdit}
+          onDelete={setDeleteTarget}
+          searchPlaceholder="Search users…"
+          reloadKey={reloadKey}
+        />
+      </Stack>
 
       <Modal
         opened={formOpened}
         onClose={closeForm}
         title={editing ? 'Edit user' : 'New user'}
+        styles={{ title: { color: 'black', fontWeight: 600 } }}
       >
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <TextInput
@@ -240,6 +243,7 @@ export function UsersPage() {
         opened={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
         title="Delete user"
+        styles={{ title: { color: 'black', fontWeight: 600 } }}
       >
         <Text>
           Are you sure you want to delete{' '}

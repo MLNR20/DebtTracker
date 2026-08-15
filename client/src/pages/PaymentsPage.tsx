@@ -5,6 +5,7 @@ import {
   Modal,
   NumberInput,
   Select,
+  Stack,
   Text,
   TextInput,
 } from '@mantine/core'
@@ -178,17 +179,19 @@ export function PaymentsPage() {
 
   return (
     <>
-      <CrudTable
-        title="Payments"
-        columns={columns}
-        getRowId={(row) => row.payment_id}
-        fetchPage={fetchPayments}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-        onDelete={setDeleteTarget}
-        searchPlaceholder="Search payments…"
-        reloadKey={reloadKey}
-      />
+      <Stack gap="lg" p="xl">
+        <CrudTable
+          title="Payments"
+          columns={columns}
+          getRowId={(row) => row.payment_id}
+          fetchPage={fetchPayments}
+          onCreate={handleCreate}
+          onEdit={handleEdit}
+          onDelete={setDeleteTarget}
+          searchPlaceholder="Search payments…"
+          reloadKey={reloadKey}
+        />
+      </Stack>
 
       <Modal
         opened={formOpened}

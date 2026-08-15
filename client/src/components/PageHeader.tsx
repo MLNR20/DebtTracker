@@ -1,14 +1,16 @@
 import { Text, Title } from '@mantine/core'
 
-export function PageHeader({ header, subheader }: { header: string; subheader: string }) {
+export function PageHeader({ header, subheader }: { header: string; subheader?: string }) {
   return (
-    <div>
-      <Title order={2} c="black">
+    <div style={{ width: '100%' }}>
+      <Title order={3} c="black">
         {header}
       </Title>
-      <Text size="md" c="gray" mt={2}>
-        {subheader}
-      </Text>
+      {subheader && (
+        <Text size="lg" c="gray" mt={2}>
+          {subheader}
+        </Text>
+      )}
     </div>
   )
 }

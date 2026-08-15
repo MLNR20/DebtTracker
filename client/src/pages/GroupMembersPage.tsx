@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Group as MantineGroup, Modal, Select, Text } from '@mantine/core'
+import { Button, Group as MantineGroup, Modal, Select, Stack, Text } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useForm } from '@mantine/form'
 import { zod4Resolver } from 'mantine-form-zod-resolver'
@@ -148,17 +148,19 @@ export function GroupMembersPage() {
 
   return (
     <>
-      <CrudTable
-        title="Group members"
-        columns={columns}
-        getRowId={(row) => row.group_member_id}
-        fetchPage={fetchGroupMembers}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-        onDelete={setDeleteTarget}
-        searchPlaceholder="Search group members…"
-        reloadKey={reloadKey}
-      />
+      <Stack gap="lg" p="xl">
+        <CrudTable
+          title="Group members"
+          columns={columns}
+          getRowId={(row) => row.group_member_id}
+          fetchPage={fetchGroupMembers}
+          onCreate={handleCreate}
+          onEdit={handleEdit}
+          onDelete={setDeleteTarget}
+          searchPlaceholder="Search group members…"
+          reloadKey={reloadKey}
+        />
+      </Stack>
 
       <Modal
         opened={formOpened}

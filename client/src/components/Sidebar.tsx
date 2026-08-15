@@ -31,6 +31,7 @@ export function Sidebar({ sections = navSections, collapsed = false }: SidebarPr
                   active={location.pathname === item.path}
                   onClick={() => navigate(item.path)}
                   variant="filled"
+                  radius="md"
                   style={
                     collapsed
                       ? { justifyContent: 'center', paddingInline: 0 }

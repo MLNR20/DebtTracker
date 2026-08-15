@@ -61,16 +61,24 @@ class DashboardController extends Controller
 
     public function pending(Request $request): JsonResponse
     {
-        $limit = (int) $request->integer('limit', 10);
+        $perPage = (int) $request->integer('per_page', 10);
+        $search = $request->string('search')->value() ?: null;
 
-        $debts = Debt::query()
+        $query = Debt::query()
             ->notDeleted()
             ->where('remaining_amount', '>', 0)
             ->with(['creditor', 'debtorUser', 'debtorContact'])
-            ->orderByRaw('due_date IS NULL, due_date ASC')
-            ->limit($limit)
-            ->get();
+            ->orderByRaw('due_date IS NULL, due_date ASC');
 
-        return response()->json($debts);
+        if ($search !== null && $search !== '') {
+            $query->where(function ($builder) use ($search) {
+                $builder->where('description', 'like', "%{$search}%")
+                    ->orWhereHas('creditor', fn ($q) => $q->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%"))
+                    ->orWhereHas('debtorUser', fn ($q) => $q->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%"))
+                    ->orWhereHas('debtorContact', fn ($q) => $q->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%"));
+            });
+        }
+
+        return response()->json($query->paginate($perPage));
     }
 }

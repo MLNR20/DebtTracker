@@ -7,8 +7,6 @@ import {
   Paper,
   SimpleGrid,
   Stack,
-  Table,
-  Text,
   Title,
 } from '@mantine/core'
 import {
@@ -27,15 +25,12 @@ import {
   IconClockDollar,
   IconReceipt2,
 } from '@tabler/icons-react'
-import {
-  fetchDashboardChart,
-  fetchDashboardSummary,
-  fetchPendingDebts,
-} from '../api/dashboard'
+import { fetchDashboardChart, fetchDashboardSummary, fetchPendingDebts } from '../api/dashboard'
 import type { DashboardChartPoint, DashboardSummary } from '../types/dashboard'
 import type { Debt } from '../types/debt'
 import { PageHeader } from '../components/PageHeader'
 import { StatCard } from '../components/StatCard'
+import { ReadOnlyTable, type ReadOnlyTableColumn } from '../components/ReadOnlyTable'
 
 const statusColors: Record<string, string> = {
   pending: 'yellow',
@@ -47,21 +42,51 @@ function formatCurrency(value: number): string {
   return `₱${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
+function debtorLabel(debt: Debt): string {
+  return debt.debtor_user
+    ? `${debt.debtor_user.first_name} ${debt.debtor_user.last_name}`
+    : debt.debtor_contact
+      ? `${debt.debtor_contact.first_name} ${debt.debtor_contact.last_name}`
+      : '—'
+}
+
+const pendingColumns: ReadOnlyTableColumn<Debt>[] = [
+  { key: 'debtor', label: 'Debtor', render: debtorLabel },
+  {
+    key: 'creditor',
+    label: 'Creditor',
+    render: (debt) => (debt.creditor ? `${debt.creditor.first_name} ${debt.creditor.last_name}` : '—'),
+  },
+  {
+    key: 'remaining_amount',
+    label: 'Remaining',
+    render: (debt) => formatCurrency(Number(debt.remaining_amount)),
+  },
+  {
+    key: 'due_date',
+    label: 'Due date',
+    render: (debt) => (debt.due_date ? new Date(debt.due_date).toLocaleDateString() : '—'),
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    render: (debt) => <Badge color={statusColors[debt.status] ?? 'gray'}>{debt.status}</Badge>,
+  },
+]
+
 export function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [chartData, setChartData] = useState<DashboardChartPoint[]>([])
-  const [pendingDebts, setPendingDebts] = useState<Debt[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
 
-    Promise.all([fetchDashboardSummary(), fetchDashboardChart(6), fetchPendingDebts(10)])
-      .then(([summaryRes, chartRes, pendingRes]) => {
+    Promise.all([fetchDashboardSummary(), fetchDashboardChart(6)])
+      .then(([summaryRes, chartRes]) => {
         if (cancelled) return
         setSummary(summaryRes)
         setChartData(chartRes)
-        setPendingDebts(pendingRes)
       })
       .catch(() => {
         if (!cancelled) {
@@ -125,7 +150,7 @@ export function DashboardPage() {
             Debt activity (last 6 months)
           </Title>
           <div style={{ paddingRight: 24, paddingBottom: 8 }}>
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={550}>
               <AreaChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 16 }}>
                 <defs>
                   <linearGradient id="totalGradient" x1="0" y1="0" x2="0" y2="1">
@@ -162,60 +187,14 @@ export function DashboardPage() {
       </Grid.Col>
 
       <Grid.Col span={12}>
-        <Paper withBorder p="md" radius="md">
-          <Title order={5} mb="sm">
-            Pending balances
-          </Title>
-          <Table.ScrollContainer minWidth={480} px="md">
-            <Table striped highlightOnHover verticalSpacing="xs" horizontalSpacing="md">
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Debtor</Table.Th>
-                  <Table.Th>Creditor</Table.Th>
-                  <Table.Th>Remaining</Table.Th>
-                  <Table.Th>Due date</Table.Th>
-                  <Table.Th>Status</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {pendingDebts.length === 0 && (
-                  <Table.Tr>
-                    <Table.Td colSpan={5}>
-                      <Text c="dimmed" ta="center" py="md">
-                        No pending balances.
-                      </Text>
-                    </Table.Td>
-                  </Table.Tr>
-                )}
-                {pendingDebts.map((debt) => (
-                  <Table.Tr key={debt.debt_id}>
-                    <Table.Td>
-                      {debt.debtor_user
-                        ? `${debt.debtor_user.first_name} ${debt.debtor_user.last_name}`
-                        : debt.debtor_contact
-                          ? `${debt.debtor_contact.first_name} ${debt.debtor_contact.last_name}`
-                          : '—'}
-                    </Table.Td>
-                    <Table.Td>
-                      {debt.creditor
-                        ? `${debt.creditor.first_name} ${debt.creditor.last_name}`
-                        : '—'}
-                    </Table.Td>
-                    <Table.Td>{formatCurrency(Number(debt.remaining_amount))}</Table.Td>
-                    <Table.Td>
-                      {debt.due_date ? new Date(debt.due_date).toLocaleDateString() : '—'}
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge color={statusColors[debt.status] ?? 'gray'}>
-                        {debt.status}
-                      </Badge>
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
-              </Table.Tbody>
-            </Table>
-          </Table.ScrollContainer>
-        </Paper>
+        <ReadOnlyTable
+          title="Pending balances"
+          columns={pendingColumns}
+          getRowId={(row) => row.debt_id}
+          fetchPage={fetchPendingDebts}
+          searchPlaceholder="Search pending balances…"
+          minHeight={600}
+        />
       </Grid.Col>
       </Grid>
     </Stack>

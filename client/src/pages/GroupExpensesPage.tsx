@@ -6,6 +6,7 @@ import {
   Modal,
   NumberInput,
   Select,
+  Stack,
   Text,
   TextInput,
 } from '@mantine/core'
@@ -191,17 +192,19 @@ export function GroupExpensesPage() {
 
   return (
     <>
-      <CrudTable
-        title="Group expenses"
-        columns={columns}
-        getRowId={(row) => row.expense_id}
-        fetchPage={fetchGroupExpenses}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-        onDelete={setDeleteTarget}
-        searchPlaceholder="Search expenses…"
-        reloadKey={reloadKey}
-      />
+      <Stack gap="lg" p="xl">
+        <CrudTable
+          title="Group expenses"
+          columns={columns}
+          getRowId={(row) => row.expense_id}
+          fetchPage={fetchGroupExpenses}
+          onCreate={handleCreate}
+          onEdit={handleEdit}
+          onDelete={setDeleteTarget}
+          searchPlaceholder="Search expenses…"
+          reloadKey={reloadKey}
+        />
+      </Stack>
 
       <Modal
         opened={formOpened}

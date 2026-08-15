@@ -13,12 +13,12 @@ export function StatCard({
   icon: ComponentType<{ size?: number | string; stroke?: number }>
 }) {
   return (
-    <Paper withBorder px={26} py={24} radius="md">
-      <Group justify="flex-start" align="center">
+    <Paper withBorder px="xl" py="xl" radius="md">
+      <Group justify="flex-start" align="flex-start">
         <ActionIcon
           variant="light"
           color={color ?? 'violet'}
-          size={40}
+          size={52}
           radius="md"
           disabled
           styles={{
@@ -28,13 +28,13 @@ export function StatCard({
             },
           }}
         >
-          <Icon size={22} stroke={1.75} />
+          <Icon size={28} stroke={1.75} />
         </ActionIcon>
         <div style={{ textAlign: 'left' }}>
-          <Text size="md" c="dimmed">
+          <Text size="lg" c="dimmed">
             {label}
           </Text>
-          <Text size="2rem" fw={700} mt="0.48rem" c="black">
+          <Text size="2.25rem" fw={700} mt="0.48rem" c="black">
             {value}
           </Text>
         </div>

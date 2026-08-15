@@ -5,6 +5,7 @@ import {
   Loader,
   Pagination,
   Paper,
+  Select,
   Table,
   Text,
   TextInput,
@@ -35,6 +36,7 @@ interface ReadOnlyTableProps<T> {
   perPage?: number
   /** Bumped by the parent to force a refetch. */
   reloadKey?: number
+  minHeight?: number
 }
 
 export function ReadOnlyTable<T>({
@@ -44,10 +46,12 @@ export function ReadOnlyTable<T>({
   fetchPage,
   onView,
   searchPlaceholder = 'Search…',
-  perPage = 15,
+  perPage: initialPerPage = 15,
   reloadKey = 0,
+  minHeight,
 }: ReadOnlyTableProps<T>) {
   const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(initialPerPage)
   const [search, setSearch] = useState('')
   const [debouncedSearch] = useDebouncedValue(search, 300)
   const [result, setResult] = useState<PaginatedResponse<T> | null>(null)
@@ -56,7 +60,7 @@ export function ReadOnlyTable<T>({
 
   useEffect(() => {
     setPage(1)
-  }, [debouncedSearch])
+  }, [debouncedSearch, perPage])
 
   useEffect(() => {
     let cancelled = false
@@ -83,17 +87,31 @@ export function ReadOnlyTable<T>({
   const showActions = Boolean(onView)
 
   return (
-    <Paper withBorder p="xl" radius="md">
+    <Paper withBorder p="lg" radius="md" style={{ minHeight }}>
       <Group justify="space-between" mb="md">
-        <Title order={3}>{title}</Title>
+        <Title order={3} c="black">{title}</Title>
       </Group>
 
-      <TextInput
-        placeholder={searchPlaceholder}
-        value={search}
-        onChange={(event) => setSearch(event.currentTarget.value)}
-        mb="md"
-      />
+      <Group justify="space-between" mb="md" align="flex-end">
+        <TextInput
+          placeholder={searchPlaceholder}
+          value={search}
+          onChange={(event) => setSearch(event.currentTarget.value)}
+          style={{ flex: 1 }}
+        />
+        <Select
+          value={String(perPage)}
+          onChange={(value) => setPerPage(value ? Number(value) : initialPerPage)}
+          data={[
+            { value: '10', label: 'Show 10' },
+            { value: '25', label: 'Show 25' },
+            { value: '50', label: 'Show 50' },
+            { value: '100', label: 'Show 100' },
+          ]}
+          w={130}
+          allowDeselect={false}
+        />
+      </Group>
 
       {error && (
         <Alert color="red" mb="md">
@@ -102,13 +120,19 @@ export function ReadOnlyTable<T>({
       )}
 
       <Table.ScrollContainer minWidth={480}>
-        <Table striped highlightOnHover verticalSpacing="sm">
-          <Table.Thead>
+        <Table striped highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+          <Table.Thead style={{ backgroundColor: '#f1f3f5' }}>
             <Table.Tr>
               {columns.map((column) => (
-                <Table.Th key={column.key}>{column.label}</Table.Th>
+                <Table.Th key={column.key} style={{ color: '#1a1b1e' }}>
+                  {column.label}
+                </Table.Th>
               ))}
-              {showActions && <Table.Th w={120}>Actions</Table.Th>}
+              {showActions && (
+                <Table.Th w={120} style={{ color: '#1a1b1e' }}>
+                  Actions
+                </Table.Th>
+              )}
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -166,14 +190,14 @@ export function ReadOnlyTable<T>({
       </Table.ScrollContainer>
 
       <Group justify="space-between" mt="md">
-        <Text size="sm" c="dimmed">
-          {result ? `${result.total} total` : ''}
-        </Text>
         <Pagination
           value={page}
           onChange={setPage}
           total={result?.last_page ?? 1}
         />
+        <Text size="sm" c="dimmed">
+          {result ? `Showing ${result.current_page} out of ${result.last_page} (${result.total} total)` : ''}
+        </Text>
       </Group>
     </Paper>
   )
