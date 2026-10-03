@@ -6,15 +6,15 @@ import {
   NumberInput,
   Paper,
   Select,
-  Text,
+  SimpleGrid,
   TextInput,
-  Title,
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { zod4Resolver } from 'mantine-form-zod-resolver'
 import { notifications } from '@mantine/notifications'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
+import { PageHeader } from '../components/PageHeader'
 import { createDebt } from '../api/debts'
 import { fetchUsers } from '../api/users'
 import { fetchContacts } from '../api/contacts'
@@ -119,72 +119,73 @@ export function BulkDebtAssignPage() {
   }
 
   return (
-    <Paper withBorder p="xl" radius="md" maw={560}>
-      <Title order={3} mb="md">
-        Assign debt to multiple debtors
-      </Title>
-      <Text c="dimmed" size="sm" mb="lg">
-        Pick a creditor and any number of debtors — each selected debtor will owe the
-        same amount.
-      </Text>
+    <Paper withBorder p="xl" radius="md" w="100%">
+      <div
+        style={{
+          padding: 'var(--mantine-spacing-sm)',
+          marginTop: 'var(--mantine-spacing-sm)',
+          marginBottom: 'var(--mantine-spacing-sm)',
+        }}
+      >
+        <PageHeader
+          header="Assign debt to multiple debtors"
+          subheader="Pick a creditor and any number of debtors — each selected debtor will owe the same amount."
+        />
+      </div>
 
       <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Select
-          label="Creditor"
-          placeholder="Select a user"
-          data={userOptions}
-          searchable
-          {...form.getInputProps('creditor_id')}
-        />
-        <MultiSelect
-          label="Debtors (registered users)"
-          placeholder="Select users"
-          data={userOptions}
-          searchable
-          mt="sm"
-          {...form.getInputProps('debtor_user_ids')}
-        />
-        <MultiSelect
-          label="Debtors (contacts)"
-          placeholder="Select contacts"
-          data={contactOptions}
-          searchable
-          mt="sm"
-          {...form.getInputProps('debtor_contact_ids')}
-        />
-        <NumberInput
-          label="Amount owed by each debtor"
-          placeholder="0.00"
-          min={0}
-          decimalScale={2}
-          mt="sm"
-          {...form.getInputProps('amount')}
-        />
-        <TextInput
-          label="Description"
-          placeholder="Dinner split"
-          mt="sm"
-          {...form.getInputProps('description')}
-        />
-        <TextInput
-          type="date"
-          label="Due date"
-          mt="sm"
-          {...form.getInputProps('due_date')}
-        />
-        <Select
-          label="Status"
-          data={statusOptions}
-          mt="sm"
-          allowDeselect={false}
-          {...form.getInputProps('status')}
-        />
-        <MantineGroup justify="flex-end" mt="md">
-          <Button variant="default" type="button" onClick={() => navigate('/debts')}>
-            Cancel
-          </Button>
+        <SimpleGrid cols={2} spacing="md">
+          <Select
+            label="Creditor"
+            placeholder="Select a user"
+            data={userOptions}
+            searchable
+            {...form.getInputProps('creditor_id')}
+          />
+          <MultiSelect
+            label="Debtors (registered users)"
+            placeholder="Select users"
+            data={userOptions}
+            searchable
+            {...form.getInputProps('debtor_user_ids')}
+          />
+          <MultiSelect
+            label="Debtors (contacts)"
+            placeholder="Select contacts"
+            data={contactOptions}
+            searchable
+            {...form.getInputProps('debtor_contact_ids')}
+          />
+          <NumberInput
+            label="Amount owed by each debtor"
+            placeholder="0.00"
+            min={0}
+            decimalScale={2}
+            {...form.getInputProps('amount')}
+          />
+          <TextInput
+            label="Description"
+            placeholder="Dinner split"
+            {...form.getInputProps('description')}
+          />
+          <TextInput
+            type="date"
+            label="Due date"
+            {...form.getInputProps('due_date')}
+          />
+          <Select
+            label="Status"
+            data={statusOptions}
+            allowDeselect={false}
+            {...form.getInputProps('status')}
+          />
+        </SimpleGrid>
+        <MantineGroup justify="flex-start" mt="md">
           <Button type="submit" loading={submitting}>
             Create debts
+          </Button>
+          <Button variant="default" type="button" onClick={() => navigate('/debts')}>
+            Cancel
           </Button>
         </MantineGroup>
       </form>

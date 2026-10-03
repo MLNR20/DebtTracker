@@ -9,11 +9,11 @@ import {
   Select,
   Table,
   Text,
-  TextInput,
 } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import { IconEye, IconPencil, IconTrash } from '@tabler/icons-react'
 import { PageHeader } from './PageHeader'
+import { TableSearch } from './TableSearch'
 import type { PaginatedResponse } from '../types/pagination'
 
 export interface CrudTableColumn<T> {
@@ -102,12 +102,7 @@ export function CrudTable<T>({
       </Group>
 
       <Group justify="space-between" mb="md" align="flex-end">
-        <TextInput
-          placeholder={searchPlaceholder}
-          value={search}
-          onChange={(event) => setSearch(event.currentTarget.value)}
-          style={{ flex: 1 }}
-        />
+        <TableSearch value={search} onChange={setSearch} placeholder={searchPlaceholder} />
         <Select
           value={String(perPage)}
           onChange={(value) => setPerPage(value ? Number(value) : initialPerPage)}

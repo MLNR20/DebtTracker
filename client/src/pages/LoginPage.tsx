@@ -3,7 +3,7 @@ import { useForm } from '@mantine/form'
 import { zod4Resolver } from 'mantine-form-zod-resolver'
 import { notifications } from '@mantine/notifications'
 import { isAxiosError } from 'axios'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { login } from '../api/auth'
@@ -23,6 +23,16 @@ export function LoginPage() {
     initialValues: { login: '', password: '' },
     validate: zod4Resolver(loginSchema),
   })
+
+  useEffect(() => {
+    if (sessionStorage.getItem('session_expired')) {
+      sessionStorage.removeItem('session_expired')
+      notifications.show({
+        message: 'Your session has expired. Please sign in again.',
+        color: 'yellow',
+      })
+    }
+  }, [])
 
   const handleSubmit = async (values: LoginFormValues) => {
     setSubmitting(true)

@@ -15,13 +15,19 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+const PUBLIC_PATHS = ['/login', '/register', '/forgot-password']
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const hadToken = Boolean(localStorage.getItem('auth_token'))
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
-      if (window.location.pathname !== '/login') {
+      if (!PUBLIC_PATHS.includes(window.location.pathname)) {
+        if (hadToken) {
+          sessionStorage.setItem('session_expired', '1')
+        }
         window.location.href = '/login'
       }
     }
