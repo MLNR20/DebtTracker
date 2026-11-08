@@ -18,6 +18,7 @@ import { PaymentsPage } from './pages/PaymentsPage'
 import { SchedulePage } from './pages/SchedulePage'
 import { HistoryPage } from './pages/HistoryPage'
 import { LogsPage } from './pages/LogsPage'
+import { AchievementsPage } from './pages/AchievementsPage'
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
             path="/notifications"
             element={<ComingSoonPage title="Notifications" />}
           />
+          <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/logs" element={<LogsPage />} />
         </Route>
       </Route>

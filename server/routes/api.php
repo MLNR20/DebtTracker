@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AchievementController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\DashboardController;
@@ -46,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('debts', DebtController::class);
     Route::apiResource('payments', PaymentController::class);
     Route::apiResource('payment-histories', PaymentHistoryController::class)->only(['index', 'show']);
+    Route::apiResource('achievements', AchievementController::class);
     Route::apiResource('logs', LogController::class)->only(['index', 'show']);
 
     Route::get('dashboard/summary', [DashboardController::class, 'summary']);

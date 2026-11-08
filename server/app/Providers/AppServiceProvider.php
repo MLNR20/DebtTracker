@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\AchievementRepositoryInterface;
 use App\Repositories\Contracts\ContactRepositoryInterface;
 use App\Repositories\Contracts\DebtRepositoryInterface;
 use App\Repositories\Contracts\GroupExpenseRepositoryInterface;
@@ -12,6 +13,7 @@ use App\Repositories\Contracts\PaymentHistoryRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\AchievementRepository;
 use App\Repositories\ContactRepository;
 use App\Repositories\DebtRepository;
 use App\Repositories\GroupExpenseRepository;
@@ -43,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PaymentRepositoryInterface::class, PaymentRepository::class);
         $this->app->bind(PaymentHistoryRepositoryInterface::class, PaymentHistoryRepository::class);
         $this->app->bind(LogRepositoryInterface::class, LogRepository::class);
+        $this->app->bind(AchievementRepositoryInterface::class, AchievementRepository::class);
     }
 
     /**

@@ -7,6 +7,7 @@ import {
   IconLayoutDashboard,
   IconReceipt2,
   IconShieldLock,
+  IconTrophy,
   IconUsers,
   IconUsersGroup,
   IconCash,
@@ -67,6 +68,7 @@ export const navSections: NavSection[] = [
     label: 'Activity',
     items: [
       { label: 'Notifications', path: '/notifications', icon: IconBell },
+      { label: 'Achievements', path: '/achievements', icon: IconTrophy },
       { label: 'Logs', path: '/logs', icon: IconFileText },
     ],
   },
