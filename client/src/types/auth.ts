@@ -9,6 +9,9 @@ export interface AuthUser {
 export interface AuthResponse {
   user: AuthUser
   token: string
+  refresh_token: string
+  token_type: string
+  expires_in: number
 }
 
 export interface LoginPayload {

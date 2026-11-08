@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -29,12 +30,7 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+        return response()->json(array_merge(['user' => $user], $this->issueTokens($user)), 201);
     }
 
     public function login(Request $request)
@@ -54,7 +50,7 @@ class AuthController extends Controller
             ]);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $tokens = $this->issueTokens($user);
 
         Log::create([
             'user_id' => $user->user_id,
@@ -62,10 +58,35 @@ class AuthController extends Controller
             'logs_details' => "{$user->user_name} logged in",
         ]);
 
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
+        return response()->json(array_merge(['user' => $user], $tokens));
+    }
+
+    public function refresh(Request $request)
+    {
+        $validated = $request->validate([
+            'refresh_token' => ['required', 'string'],
         ]);
+
+        $refreshToken = PersonalAccessToken::findToken($validated['refresh_token']);
+
+        if (
+            ! $refreshToken
+            || ! in_array('issue-access-token', $refreshToken->abilities ?? [], true)
+            || ($refreshToken->expires_at && $refreshToken->expires_at->isPast())
+        ) {
+            return response()->json(['message' => 'Invalid or expired refresh token.'], 401);
+        }
+
+        $user = $refreshToken->tokenable;
+
+        // Rotate: a refresh token can only be used once.
+        $refreshToken->delete();
+
+        if (! $user) {
+            return response()->json(['message' => 'Invalid or expired refresh token.'], 401);
+        }
+
+        return response()->json($this->issueTokens($user));
     }
 
     public function resetPassword(Request $request)
@@ -94,6 +115,15 @@ class AuthController extends Controller
         $user = $request->user();
         $user->currentAccessToken()->delete();
 
+        if ($refresh = $request->input('refresh_token')) {
+            $refreshToken = PersonalAccessToken::findToken($refresh);
+            if ($refreshToken
+                && (string) $refreshToken->tokenable_id === (string) $user->getKey()
+                && in_array('issue-access-token', $refreshToken->abilities ?? [], true)) {
+                $refreshToken->delete();
+            }
+        }
+
         Log::create([
             'user_id' => $user->user_id,
             'logs_type' => 'logout',
@@ -101,5 +131,24 @@ class AuthController extends Controller
         ]);
 
         return response()->json(['message' => 'Logged out']);
+    }
+
+    /**
+     * Issue a short-lived access token and a long-lived refresh token.
+     */
+    private function issueTokens(User $user): array
+    {
+        $accessMinutes = (int) config('sanctum.access_token_expiration', 60);
+        $refreshMinutes = (int) config('sanctum.refresh_token_expiration', 60 * 24 * 30);
+
+        $access = $user->createToken('access_token', ['access-api'], now()->addMinutes($accessMinutes));
+        $refresh = $user->createToken('refresh_token', ['issue-access-token'], now()->addMinutes($refreshMinutes));
+
+        return [
+            'token' => $access->plainTextToken,
+            'refresh_token' => $refresh->plainTextToken,
+            'token_type' => 'Bearer',
+            'expires_in' => $accessMinutes * 60,
+        ];
     }
 }

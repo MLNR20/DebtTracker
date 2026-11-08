@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { login } from '../api/auth'
+import { saveTokens } from '../lib/api'
 
 const loginSchema = z.object({
   login: z.string().min(1, 'Username or email is required'),
@@ -37,8 +38,8 @@ export function LoginPage() {
   const handleSubmit = async (values: LoginFormValues) => {
     setSubmitting(true)
     try {
-      const { token, user } = await login(values)
-      localStorage.setItem('auth_token', token)
+      const { token, refresh_token, user } = await login(values)
+      saveTokens({ token, refresh_token })
       localStorage.setItem('auth_user', JSON.stringify(user))
       notifications.show({ message: 'Logged in successfully', color: 'green' })
       navigate('/dashboard')

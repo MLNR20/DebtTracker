@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { register } from '../api/auth'
+import { saveTokens } from '../lib/api'
 
 const registerSchema = z
   .object({
@@ -43,8 +44,8 @@ export function RegisterPage() {
   const handleSubmit = async (values: RegisterFormValues) => {
     setSubmitting(true)
     try {
-      const { token, user } = await register(values)
-      localStorage.setItem('auth_token', token)
+      const { token, refresh_token, user } = await register(values)
+      saveTokens({ token, refresh_token })
       localStorage.setItem('auth_user', JSON.stringify(user))
       notifications.show({ message: 'Account created', color: 'green' })
       navigate('/dashboard')

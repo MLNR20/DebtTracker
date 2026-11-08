@@ -50,6 +50,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Access / Refresh Token Lifetimes (minutes)
+    |--------------------------------------------------------------------------
+    |
+    | Access tokens are short-lived and used to call the API. Refresh tokens
+    | are long-lived, can only be exchanged at POST /api/refresh for a new
+    | access/refresh pair, and are rotated on every use.
+    |
+    */
+
+    'access_token_expiration' => (int) env('SANCTUM_ACCESS_TOKEN_MINUTES', 60),
+
+    'refresh_token_expiration' => (int) env('SANCTUM_REFRESH_TOKEN_MINUTES', 60 * 24 * 30),
+
+    /*
+    |--------------------------------------------------------------------------
     | Sanctum Middleware
     |--------------------------------------------------------------------------
     |

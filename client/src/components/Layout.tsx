@@ -9,6 +9,7 @@ import {
 } from '@tabler/icons-react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { logout } from '../api/auth'
+import { clearSession } from '../lib/api'
 import { Sidebar } from './Sidebar'
 import { navSections, primaryNavSections } from './navConfig'
 import type { AuthUser } from '../types/auth'
@@ -38,8 +39,7 @@ export function Layout() {
     } catch {
       // ignore — clear local session regardless
     } finally {
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('auth_user')
+      clearSession()
       navigate('/login')
     }
   }

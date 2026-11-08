@@ -27,15 +27,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::middleware(['auth:sanctum', 'ability:access-api'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('reset-password', [AuthController::class, 'resetPassword']);
+Route::post('refresh', [AuthController::class, 'refresh'])->middleware('throttle:30,1');
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'ability:access-api'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
 
     Route::apiResource('roles', RoleController::class);

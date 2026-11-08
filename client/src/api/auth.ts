@@ -12,7 +12,7 @@ export async function register(payload: RegisterPayload) {
 }
 
 export async function logout() {
-  await api.post('/logout')
+  await api.post('/logout', { refresh_token: localStorage.getItem('auth_refresh_token') })
 }
 
 export async function resetPassword(payload: ResetPasswordPayload) {
