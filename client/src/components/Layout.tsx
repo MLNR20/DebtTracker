@@ -7,11 +7,16 @@ import {
   IconLogout,
   IconUserCircle,
 } from '@tabler/icons-react'
+import { useEffect, useMemo, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
+import { fetchMyAccess } from '../api/access'
 import { logout } from '../api/auth'
 import { clearSession } from '../lib/api'
+import { getStoredAccess, saveAccess } from '../lib/access'
+import { AccessContext } from './AccessContext'
 import { Sidebar } from './Sidebar'
-import { navSections, primaryNavSections } from './navConfig'
+import { filterNavSections, navSections, primaryNavSections } from './navConfig'
+import type { Access } from '../types/access'
 import type { AuthUser } from '../types/auth'
 
 const EXPANDED_WIDTH = 240
@@ -32,6 +37,29 @@ export function Layout() {
   const [desktopCollapsed, { toggle: toggleDesktop }] = useDisclosure(false)
   const navigate = useNavigate()
   const user = getStoredUser()
+  const [access, setAccess] = useState<Access | null>(getStoredAccess)
+
+  // Role/page assignments can change after login, so re-sync on every app load.
+  useEffect(() => {
+    fetchMyAccess()
+      .then((fresh) => {
+        saveAccess(fresh)
+        setAccess(fresh)
+      })
+      .catch(() => {
+        // keep the cached access; a 401 is handled by the api interceptor
+      })
+  }, [])
+
+  const allowedPaths = useMemo(
+    () => new Set((access?.pages ?? []).map((page) => page.page_path)),
+    [access],
+  )
+  const visiblePrimary = useMemo(
+    () => filterNavSections(primaryNavSections, allowedPaths),
+    [allowedPaths],
+  )
+  const visibleNav = useMemo(() => filterNavSections(navSections, allowedPaths), [allowedPaths])
 
   const handleLogout = async () => {
     try {
@@ -98,8 +126,8 @@ export function Layout() {
         <Stack h="100%" gap={0}>
           <ScrollArea style={{ flex: 1 }} offsetScrollbars>
             <Stack gap="lg">
-              <Sidebar sections={primaryNavSections} collapsed={desktopCollapsed} />
-              <Sidebar sections={navSections} collapsed={desktopCollapsed} />
+              <Sidebar sections={visiblePrimary} collapsed={desktopCollapsed} />
+              <Sidebar sections={visibleNav} collapsed={desktopCollapsed} />
             </Stack>
           </ScrollArea>
 
@@ -137,7 +165,9 @@ export function Layout() {
       </AppShell.Navbar>
 
       <AppShell.Main style={{ display: 'flex', flexDirection: 'column' }}>
-        <Outlet />
+        <AccessContext.Provider value={access}>
+          <Outlet />
+        </AccessContext.Provider>
       </AppShell.Main>
     </AppShell>
   )

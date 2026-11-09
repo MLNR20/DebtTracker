@@ -1,3 +1,5 @@
+import type { Access } from './access'
+
 export interface AuthUser {
   user_id: string
   first_name: string
@@ -8,6 +10,7 @@ export interface AuthUser {
 
 export interface AuthResponse {
   user: AuthUser
+  access: Access
   token: string
   refresh_token: string
   token_type: string

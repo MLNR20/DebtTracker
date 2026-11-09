@@ -4,6 +4,8 @@ import type { Role } from '../types/role'
 
 export interface RoleInput {
   role_name: string
+  is_admin: boolean
+  page_ids: string[]
 }
 
 export function fetchRoles(params: {

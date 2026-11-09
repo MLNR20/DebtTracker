@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasIsDeleted;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -51,6 +52,58 @@ class User extends Authenticatable
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id', 'role_id');
+    }
+
+    public function isAdmin(): bool
+    {
+        return (bool) $this->role?->is_admin;
+    }
+
+    /**
+     * Pages this user may open: every page for admin roles, otherwise the
+     * pages assigned to their role (none when they have no role).
+     */
+    public function accessiblePages(): Collection
+    {
+        if (! $this->role) {
+            return new Collection();
+        }
+
+        $query = $this->isAdmin() ? Page::query() : $this->role->pages();
+
+        return $query->orderBy('pages.sort_order')->get();
+    }
+
+    /**
+     * @param  array<int, string>  $pageKeys  access is granted when ANY of these is allowed
+     */
+    public function canAccessAnyPage(array $pageKeys): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        if (! $this->role) {
+            return false;
+        }
+
+        return $this->role->pages()->whereIn('pages.page_key', $pageKeys)->exists();
+    }
+
+    /**
+     * Shape returned to the client so it can build navigation and route guards.
+     */
+    public function accessPayload(): array
+    {
+        $this->loadMissing('role');
+
+        return [
+            'role' => $this->role?->only(['role_id', 'role_name', 'is_admin']),
+            'is_admin' => $this->isAdmin(),
+            'pages' => $this->accessiblePages()
+                ->map(fn (Page $page) => $page->only(['page_id', 'page_key', 'page_name', 'page_path', 'page_group', 'sort_order']))
+                ->values(),
+        ];
     }
 
     public function contacts(): HasMany

@@ -4,11 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
     use HasUuids;
+
+    public const ADMIN_NAME = 'Admin';
+
+    public const DEFAULT_USER_NAME = 'User';
 
     protected $primaryKey = 'role_id';
 
@@ -22,6 +27,11 @@ class Role extends Model
 
     protected $fillable = [
         'role_name',
+        'is_admin',
+    ];
+
+    protected $casts = [
+        'is_admin' => 'boolean',
     ];
 
     public function getRouteKeyName(): string
@@ -32,5 +42,11 @@ class Role extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'role_id', 'role_id');
+    }
+
+    public function pages(): BelongsToMany
+    {
+        return $this->belongsToMany(Page::class, 'role_pages', 'role_id', 'page_id')
+            ->using(RolePage::class);
     }
 }

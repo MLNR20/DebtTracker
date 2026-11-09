@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AccessController;
 use App\Http\Controllers\Api\AchievementController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Api\GroupController;
 use App\Http\Controllers\Api\GroupExpenseController;
 use App\Http\Controllers\Api\GroupMemberController;
 use App\Http\Controllers\Api\LogController;
+use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PaymentHistoryController;
 use App\Http\Controllers\Api\RoleController;
@@ -38,20 +40,45 @@ Route::post('refresh', [AuthController::class, 'refresh'])->middleware('throttle
 
 Route::middleware(['auth:sanctum', 'ability:access-api'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::get('me', [AccessController::class, 'me']);
 
-    Route::apiResource('roles', RoleController::class);
-    Route::apiResource('contacts', ContactController::class);
-    Route::apiResource('users', UserController::class);
-    Route::apiResource('groups', GroupController::class);
-    Route::apiResource('group-members', GroupMemberController::class);
-    Route::apiResource('group-expenses', GroupExpenseController::class);
-    Route::apiResource('debts', DebtController::class);
-    Route::apiResource('payments', PaymentController::class);
-    Route::apiResource('payment-histories', PaymentHistoryController::class)->only(['index', 'show']);
-    Route::apiResource('achievements', AchievementController::class);
-    Route::apiResource('logs', LogController::class)->only(['index', 'show']);
+    /*
+    | RBAC: `page:<keys>` lets a request through when the user's role has been
+    | assigned ANY of the listed pages (admin roles always pass). Read access
+    | (index/show) is also granted to pages that need the resource as a lookup
+    | list, e.g. the debts form lists users and contacts. Writes need the
+    | resource's own page.
+    */
+    $resource = function (string $uri, string $controller, array $read, ?array $write = null, bool $readOnly = false) {
+        Route::apiResource($uri, $controller)
+            ->only(['index', 'show'])
+            ->middleware('page:'.implode(',', $read));
 
-    Route::get('dashboard/summary', [DashboardController::class, 'summary']);
-    Route::get('dashboard/chart', [DashboardController::class, 'chart']);
-    Route::get('dashboard/pending', [DashboardController::class, 'pending']);
+        if (! $readOnly) {
+            Route::apiResource($uri, $controller)
+                ->except(['index', 'show'])
+                ->middleware('page:'.implode(',', $write ?? $read));
+        }
+    };
+
+    $resource('roles', RoleController::class, ['roles', 'users'], ['roles']);
+    Route::get('roles/{role}/pages', [RoleController::class, 'pages'])->middleware('page:roles');
+    Route::put('roles/{role}/pages', [RoleController::class, 'syncPages'])->middleware('page:roles');
+    $resource('pages', PageController::class, ['pages', 'roles'], ['pages']);
+    $resource('users', UserController::class, ['users', 'contacts', 'debts', 'bulk-debt-assign', 'groups', 'group-members', 'group-expenses'], ['users']);
+    $resource('contacts', ContactController::class, ['contacts', 'debts', 'bulk-debt-assign'], ['contacts']);
+    $resource('groups', GroupController::class, ['groups', 'group-members', 'group-expenses'], ['groups']);
+    $resource('group-members', GroupMemberController::class, ['group-members']);
+    $resource('group-expenses', GroupExpenseController::class, ['group-expenses']);
+    $resource('debts', DebtController::class, ['debts', 'payments', 'schedule', 'bulk-debt-assign'], ['debts', 'bulk-debt-assign']);
+    $resource('payments', PaymentController::class, ['payments']);
+    $resource('payment-histories', PaymentHistoryController::class, ['history'], null, true);
+    $resource('achievements', AchievementController::class, ['achievements']);
+    $resource('logs', LogController::class, ['logs'], null, true);
+
+    Route::middleware('page:dashboard')->group(function () {
+        Route::get('dashboard/summary', [DashboardController::class, 'summary']);
+        Route::get('dashboard/chart', [DashboardController::class, 'chart']);
+        Route::get('dashboard/pending', [DashboardController::class, 'pending']);
+    });
 });

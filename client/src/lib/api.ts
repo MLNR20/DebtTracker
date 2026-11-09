@@ -1,4 +1,5 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
+import { clearAccess } from './access'
 
 const baseURL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000/api'
 
@@ -20,6 +21,7 @@ export function clearSession() {
   localStorage.removeItem('auth_token')
   localStorage.removeItem('auth_refresh_token')
   localStorage.removeItem('auth_user')
+  clearAccess()
 }
 
 api.interceptors.request.use((config) => {

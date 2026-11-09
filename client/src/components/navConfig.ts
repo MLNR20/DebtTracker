@@ -2,6 +2,7 @@ import {
   IconAddressBook,
   IconBell,
   IconCalendar,
+  IconFiles,
   IconFileText,
   IconHistory,
   IconLayoutDashboard,
@@ -26,6 +27,19 @@ export interface NavSection {
   items: NavItem[]
 }
 
+/** Keep only the nav items (and non-empty sections) the user's role can open. */
+export function filterNavSections(
+  sections: NavSection[],
+  allowedPaths: ReadonlySet<string>,
+): NavSection[] {
+  return sections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => allowedPaths.has(item.path)),
+    }))
+    .filter((section) => section.items.length > 0)
+}
+
 export const primaryNavSections: NavSection[] = [
   {
     label: 'Overview',
@@ -42,6 +56,7 @@ export const navSections: NavSection[] = [
     label: 'Access',
     items: [
       { label: 'Roles', path: '/roles', icon: IconShieldLock },
+      { label: 'Pages', path: '/pages', icon: IconFiles },
       { label: 'Users', path: '/users', icon: IconUsers },
     ],
   },

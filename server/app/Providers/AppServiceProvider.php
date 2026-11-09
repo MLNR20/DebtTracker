@@ -9,6 +9,7 @@ use App\Repositories\Contracts\GroupExpenseRepositoryInterface;
 use App\Repositories\Contracts\GroupMemberRepositoryInterface;
 use App\Repositories\Contracts\GroupRepositoryInterface;
 use App\Repositories\Contracts\LogRepositoryInterface;
+use App\Repositories\Contracts\PageRepositoryInterface;
 use App\Repositories\Contracts\PaymentHistoryRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
@@ -20,6 +21,7 @@ use App\Repositories\GroupExpenseRepository;
 use App\Repositories\GroupMemberRepository;
 use App\Repositories\GroupRepository;
 use App\Repositories\LogRepository;
+use App\Repositories\PageRepository;
 use App\Repositories\PaymentHistoryRepository;
 use App\Repositories\PaymentRepository;
 use App\Repositories\RoleRepository;
@@ -36,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind(RoleRepositoryInterface::class, RoleRepository::class);
+        $this->app->bind(PageRepositoryInterface::class, PageRepository::class);
         $this->app->bind(ContactRepositoryInterface::class, ContactRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(GroupRepositoryInterface::class, GroupRepository::class);

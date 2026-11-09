@@ -25,6 +25,9 @@ class UpdateRoleRequest extends FormRequest
                 'max:255',
                 Rule::unique('roles', 'role_name')->ignore($this->route('role'), 'role_id'),
             ],
+            'is_admin' => ['sometimes', 'boolean'],
+            'page_ids' => ['sometimes', 'array'],
+            'page_ids.*' => ['uuid', 'distinct', 'exists:pages,page_id'],
         ];
     }
 }

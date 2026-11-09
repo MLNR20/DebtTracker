@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Log;
+use App\Models\Role;
 use App\Models\User;
+use Database\Seeders\RbacSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -23,6 +25,7 @@ class AuthController extends Controller
         ]);
 
         $user = User::create([
+            'role_id' => Role::where('role_name', Role::DEFAULT_USER_NAME)->value('role_id'),
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             'email_address' => $validated['email_address'],
@@ -30,7 +33,10 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return response()->json(array_merge(['user' => $user], $this->issueTokens($user)), 201);
+        return response()->json(array_merge(
+            ['user' => $user, 'access' => $user->accessPayload()],
+            $this->issueTokens($user),
+        ), 201);
     }
 
     public function login(Request $request)
@@ -58,7 +64,7 @@ class AuthController extends Controller
             'logs_details' => "{$user->user_name} logged in",
         ]);
 
-        return response()->json(array_merge(['user' => $user], $tokens));
+        return response()->json(array_merge(['user' => $user, 'access' => $user->accessPayload()], $tokens));
     }
 
     public function refresh(Request $request)
