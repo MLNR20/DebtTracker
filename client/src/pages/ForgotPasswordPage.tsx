@@ -1,41 +1,33 @@
-import { Anchor, Button, Container, Paper, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core'
+import { Alert, Anchor, Button, Container, Paper, Stack, Text, TextInput, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { zod4Resolver } from 'mantine-form-zod-resolver'
 import { notifications } from '@mantine/notifications'
 import { isAxiosError } from 'axios'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { z } from 'zod'
-import { resetPassword } from '../api/auth'
+import { forgotPassword } from '../api/auth'
 
-const forgotPasswordSchema = z
-  .object({
-    email_address: z.string().min(1, 'Email is required').email('Invalid email'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    password_confirmation: z.string().min(1, 'Please confirm your password'),
-  })
-  .refine((values) => values.password === values.password_confirmation, {
-    message: 'Passwords do not match',
-    path: ['password_confirmation'],
-  })
+const forgotPasswordSchema = z.object({
+  email_address: z.string().min(1, 'Email is required').email('Invalid email'),
+})
 
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
 
 export function ForgotPasswordPage() {
-  const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false)
+  const [sentTo, setSentTo] = useState<string | null>(null)
 
   const form = useForm<ForgotPasswordFormValues>({
-    initialValues: { email_address: '', password: '', password_confirmation: '' },
+    initialValues: { email_address: '' },
     validate: zod4Resolver(forgotPasswordSchema),
   })
 
   const handleSubmit = async (values: ForgotPasswordFormValues) => {
     setSubmitting(true)
     try {
-      await resetPassword(values)
-      notifications.show({ message: 'Password updated successfully', color: 'green' })
-      navigate('/login')
+      await forgotPassword(values)
+      setSentTo(values.email_address)
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 422) {
         const apiErrors = err.response.data?.errors as Record<string, string[]> | undefined
@@ -44,6 +36,8 @@ export function ForgotPasswordPage() {
             Object.fromEntries(Object.entries(apiErrors).map(([field, msgs]) => [field, msgs[0]])),
           )
         }
+      } else if (isAxiosError(err) && err.response?.status === 429) {
+        notifications.show({ message: 'Too many attempts. Please try again in a minute.', color: 'red' })
       } else {
         notifications.show({ message: 'Something went wrong', color: 'red' })
       }
@@ -55,36 +49,33 @@ export function ForgotPasswordPage() {
   return (
     <Container size={420} my={80}>
       <Title order={2} ta="center" fw={700}>
-        Update password
+        Forgot password
       </Title>
       <Text c="dimmed" size="sm" ta="center" mt="xs">
-        Enter your email and choose a new password
+        Enter your email and we&apos;ll send you a link to reset your password
       </Text>
 
       <Paper withBorder shadow="sm" p="xl" mt="xl" radius="md">
-        <form onSubmit={form.onSubmit(handleSubmit)}>
-          <Stack>
-            <TextInput
-              label="Email"
-              placeholder="you@example.com"
-              withAsterisk
-              {...form.getInputProps('email_address')}
-            />
-            <PasswordInput
-              label="New password"
-              withAsterisk
-              {...form.getInputProps('password')}
-            />
-            <PasswordInput
-              label="Confirm new password"
-              withAsterisk
-              {...form.getInputProps('password_confirmation')}
-            />
-          </Stack>
-          <Button type="submit" fullWidth mt="xl" loading={submitting}>
-            Update password
-          </Button>
-        </form>
+        {sentTo ? (
+          <Alert color="green" title="Check your email">
+            If <strong>{sentTo}</strong> is registered, a password reset link is on its way. The link
+            expires in 60 minutes.
+          </Alert>
+        ) : (
+          <form onSubmit={form.onSubmit(handleSubmit)}>
+            <Stack>
+              <TextInput
+                label="Email"
+                placeholder="you@example.com"
+                withAsterisk
+                {...form.getInputProps('email_address')}
+              />
+            </Stack>
+            <Button type="submit" fullWidth mt="xl" loading={submitting}>
+              Send reset link
+            </Button>
+          </form>
+        )}
       </Paper>
 
       <Text ta="center" mt="md" size="sm">

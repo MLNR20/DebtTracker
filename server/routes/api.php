@@ -35,7 +35,8 @@ Route::middleware(['auth:sanctum', 'ability:access-api'])->get('/user', function
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
-Route::post('reset-password', [AuthController::class, 'resetPassword']);
+Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
+Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:10,1');
 Route::post('refresh', [AuthController::class, 'refresh'])->middleware('throttle:30,1');
 
 Route::middleware(['auth:sanctum', 'ability:access-api'])->group(function () {

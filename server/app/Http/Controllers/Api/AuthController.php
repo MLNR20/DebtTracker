@@ -9,6 +9,7 @@ use App\Models\User;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -95,23 +96,57 @@ class AuthController extends Controller
         return response()->json($this->issueTokens($user));
     }
 
+    /**
+     * Email a password reset link. The response is identical whether or not the
+     * address exists, so the endpoint can't be used to discover accounts.
+     */
+    public function forgotPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'email_address' => ['required', 'email'],
+        ]);
+
+        Password::sendResetLink(['email_address' => $validated['email_address']]);
+
+        return response()->json([
+            'message' => 'If that email address is registered, a password reset link has been sent.',
+        ]);
+    }
+
     public function resetPassword(Request $request)
     {
         $validated = $request->validate([
+            'token' => ['required', 'string'],
             'email_address' => ['required', 'email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $user = User::where('email_address', $validated['email_address'])->first();
+        $status = Password::reset(
+            [
+                'email_address' => $validated['email_address'],
+                'token' => $validated['token'],
+                'password' => $validated['password'],
+            ],
+            function (User $user, string $password) {
+                $user->password = Hash::make($password);
+                $user->save();
 
-        if (! $user) {
+                // Sign out every existing session/refresh token after a reset.
+                $user->tokens()->delete();
+
+                Log::create([
+                    'user_id' => $user->user_id,
+                    'logs_type' => 'password_reset',
+                    'logs_details' => "{$user->user_name} reset their password",
+                ]);
+            },
+        );
+
+        if ($status !== Password::PASSWORD_RESET) {
             throw ValidationException::withMessages([
-                'email_address' => ['We could not find a user with that email address.'],
+                'email_address' => ['This password reset link is invalid or has expired.'],
             ]);
         }
-
-        $user->password = Hash::make($validated['password']);
-        $user->save();
 
         return response()->json(['message' => 'Password updated successfully.']);
     }

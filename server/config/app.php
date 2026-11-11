@@ -56,6 +56,11 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    /*
+    | Base URL of the client SPA; used to build links in emails (password reset).
+    */
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
+
     'asset_url' => env('ASSET_URL'),
 
     /*

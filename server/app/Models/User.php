@@ -49,6 +49,19 @@ class User extends Authenticatable
     ];
 
 
+    /**
+     * The users table stores the address in `email_address`, not `email`.
+     */
+    public function getEmailForPasswordReset(): string
+    {
+        return $this->email_address;
+    }
+
+    public function routeNotificationForMail($notification = null): string
+    {
+        return $this->email_address;
+    }
+
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id', 'role_id');
